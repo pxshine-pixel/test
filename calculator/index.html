@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>股价计算器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>📈 股价计算器</h1>
+      <p class="subtitle">计算成本、盈亏、保本价与目标价（含手续费）</p>
+    </header>
+
+    <form id="calc-form" novalidate>
+      <section class="card">
+        <h2>买入</h2>
+        <div class="grid">
+          <label>
+            买入价格 (元/股)
+            <input type="number" id="buyPrice" step="0.001" min="0" placeholder="例如 10.50" />
+          </label>
+          <label>
+            买入数量 (股)
+            <input type="number" id="shares" step="1" min="0" placeholder="例如 1000" />
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>卖出 / 当前价</h2>
+        <div class="grid">
+          <label>
+            卖出价格 (元/股)
+            <input type="number" id="sellPrice" step="0.001" min="0" placeholder="例如 12.00" />
+          </label>
+          <label>
+            目标收益率 (%)
+            <span class="hint">可选，用于计算目标卖出价</span>
+            <input type="number" id="targetReturn" step="0.1" placeholder="例如 20" />
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>费用</h2>
+        <div class="grid">
+          <label>
+            佣金费率 (%)
+            <input type="number" id="commissionRate" step="0.001" min="0" value="0.025" />
+          </label>
+          <label>
+            最低佣金 (元)
+            <input type="number" id="minCommission" step="0.01" min="0" value="5" />
+          </label>
+          <label>
+            印花税 (%)
+            <span class="hint">仅卖出收取</span>
+            <input type="number" id="stampTax" step="0.001" min="0" value="0.05" />
+          </label>
+          <label>
+            过户费 (%)
+            <input type="number" id="transferFee" step="0.0001" min="0" value="0.001" />
+          </label>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="submit" id="calcBtn">计算</button>
+        <button type="button" id="resetBtn" class="secondary">重置</button>
+      </div>
+    </form>
+
+    <section class="card results" id="results" hidden>
+      <h2>计算结果</h2>
+      <div id="output"></div>
+    </section>
+
+    <footer>
+      <p class="disclaimer">费率默认值仅供参考，请以券商实际收费为准。本工具不构成投资建议。</p>
+    </footer>
+  </main>
+
+  <script src="calculator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
