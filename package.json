@@ -1,0 +1,9 @@
+{
+  "name": "stock-price-calculator",
+  "version": "1.0.0",
+  "description": "零依赖网页版股价计算器：成本、盈亏、保本价与目标价",
+  "scripts": {
+    "test": "node calculator.test.js"
+  },
+  "license": "MIT"
+}
