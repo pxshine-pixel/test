@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个股长期跟踪系统</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <h1>📡 个股长期跟踪系统</h1>
+      <div class="bridge-status" id="bridgeStatus" title="OpenD 桥接服务状态">
+        <span class="dot" id="bridgeDot"></span>
+        <span id="bridgeText">检测中…</span>
+        <button id="bridgeCfg" class="link" title="设置桥接地址">⚙</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- 左侧自选列表 -->
+      <aside class="sidebar">
+        <div class="add-stock">
+          <input id="newCode" placeholder="代码 如 600519 / 00700" />
+          <input id="newName" placeholder="名称（可选）" />
+          <button id="addStockBtn">＋ 添加</button>
+        </div>
+        <ul class="watchlist" id="watchlist"></ul>
+        <div class="sidebar-actions">
+          <button id="exportBtn" class="link">导出</button>
+          <button id="importBtn" class="link">导入</button>
+          <button id="refreshAllBtn" class="link">全部刷新</button>
+          <input type="file" id="importFile" accept="application/json" hidden />
+        </div>
+      </aside>
+
+      <!-- 右侧详情 -->
+      <section class="detail" id="detail">
+        <div class="placeholder" id="placeholder">
+          <p>👈 左侧添加 / 选择一只股票开始长期跟踪</p>
+          <p class="hint">每次记录一条「快照」(日期+价格+估值)，系统自动算出累计收益、年化与操作区间，并绘制长期价格曲线。</p>
+        </div>
+        <div id="detailBody" hidden></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 快照编辑模板由 JS 注入 -->
+  <script src="tracker.js"></script>
+  <script src="quotes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
