@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>技术分析 · 形态/密集区/买卖信号</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>📐 技术分析</h1>
+      <div class="toolbar">
+        <input id="code" placeholder="代码 如 600519 / 00700" />
+        <select id="ktype" title="K线周期">
+          <option value="K_DAY">日线</option>
+          <option value="K_WEEK">周线</option>
+          <option value="K_MON">月线</option>
+        </select>
+        <button id="analyzeBtn" class="btn primary">分析</button>
+        <button id="sampleBtn" class="btn">载入示例</button>
+        <span class="bridge-status" id="bridgeStatus" title="点击重新检测">
+          <span class="dot" id="bridgeDot"></span><span id="bridgeText">—</span>
+        </span>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <div class="placeholder" id="placeholder">
+        <p>输入代码点「分析」，或点「载入示例」先体验。</p>
+        <p class="hint">系统会基于历史 K 线计算：均线 / MACD / RSI / KDJ 技术形态、
+          密集成交区（成交量分布 POC 与价值区间），并综合给出买卖阶段信号。</p>
+      </div>
+      <div id="result" hidden></div>
+    </main>
+
+    <footer class="foot">
+      <p>所有指标均为机械计算的技术参考，不构成投资建议；行情以 OpenD 实际返回为准。</p>
+    </footer>
+  </div>
+
+  <script src="ta.js"></script>
+  <script src="sample.js"></script>
+  <script src="quotes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

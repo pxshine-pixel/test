@@ -145,6 +145,8 @@ def do_kline(code, num, ktype_name):
             'open': _f(r.get('open')),
             'high': _f(r.get('high')),
             'low': _f(r.get('low')),
+            'volume': _f(r.get('volume')),
+            'turnover': _f(r.get('turnover')),
         } for r in recs]
         return 200, {'ok': True, 'code': code, 'klines': klines}
     except Exception as e:
