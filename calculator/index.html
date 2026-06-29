@@ -45,14 +45,36 @@
 
       <section class="card">
         <h2>费用</h2>
+        <div class="preset-row">
+          <label>
+            品种预设
+            <select id="productType">
+              <option value="stock">沪深股票（万1，不免5）</option>
+              <option value="etf">场内基金 ETF/REITs（万0.5）</option>
+              <option value="lof">LOF 基金（万1，不打折）</option>
+              <option value="bondfund">债基 / 货币基金（0 手续费）</option>
+              <option value="cbsh">可转债 · 上交所（万0.5，0 起收）</option>
+              <option value="cbsz">可转债 · 深交所（万0.5，0.1 起收）</option>
+              <option value="hk">港股通（万1，无最低）</option>
+              <option value="bj">北交所（万3）</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label class="tier-wrap" id="tierWrap" hidden>
+            <input type="checkbox" id="largeTier" />
+            <span id="tierLabel">大资金优惠档</span>
+          </label>
+        </div>
+        <p class="preset-note" id="presetNote"></p>
         <div class="grid">
           <label>
             佣金费率 (%)
-            <input type="number" id="commissionRate" step="0.001" min="0" value="0.025" />
+            <input type="number" id="commissionRate" step="0.0001" min="0" value="0.01" />
           </label>
           <label>
             最低佣金 (元)
-            <input type="number" id="minCommission" step="0.01" min="0" value="5" />
+            <span class="hint">0 表示不设最低（不免5）</span>
+            <input type="number" id="minCommission" step="0.01" min="0" value="0" />
           </label>
           <label>
             印花税 (%)
@@ -61,6 +83,7 @@
           </label>
           <label>
             过户费 (%)
+            <span class="hint">买卖双向收取</span>
             <input type="number" id="transferFee" step="0.0001" min="0" value="0.001" />
           </label>
         </div>

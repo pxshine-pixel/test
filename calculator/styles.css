@@ -66,6 +66,43 @@ input {
 }
 input:focus { outline: none; border-color: var(--accent); }
 
+select {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 1rem;
+}
+select:focus { outline: none; border-color: var(--accent); }
+
+.preset-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+@media (max-width: 520px) { .preset-row { grid-template-columns: 1fr; } }
+.tier-wrap {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 0.92rem;
+  padding-bottom: 10px;
+}
+.tier-wrap input { width: auto; }
+.preset-note {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  background: var(--card-2);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
 .actions { display: flex; gap: 12px; margin-top: 4px; }
 button {
   flex: 1;
