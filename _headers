@@ -1,0 +1,11 @@
+# Cloudflare Pages 响应头配置
+# 静态资源长缓存
+/*.css
+  Cache-Control: public, max-age=86400
+/*.js
+  Cache-Control: public, max-age=86400
+
+# 基础安全头（不含 CSP，避免误伤）
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

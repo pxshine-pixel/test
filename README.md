@@ -33,6 +33,14 @@
 npm test     # 依次运行 calculator / portfolio / tracker 的测试
 ```
 
+## 部署
+
+纯静态站点，推荐用 **Cloudflare Pages + GitHub 集成** 一键部署（每次推送自动上线）。
+详细步骤见 [`DEPLOY.md`](DEPLOY.md)。
+
+- 股价计算器、投资组合追踪器：上云后完全可用。
+- 个股长期跟踪、技术分析：界面与手动/示例数据可用；实时行情仍由本机 `bridge.py` 提供。
+
 ## 技术说明
 
 - **零依赖**：纯 HTML/CSS/JavaScript，无需构建或安装即可在浏览器打开。
