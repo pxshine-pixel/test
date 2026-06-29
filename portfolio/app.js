@@ -85,8 +85,8 @@
     legendEl.innerHTML = '';
 
     if (slices.length === 0) {
-      pieEl.innerHTML = '<circle cx="100" cy="100" r="80" fill="#273449" />' +
-        '<text x="100" y="105" text-anchor="middle" fill="#94a3b8" font-size="12">暂无数据</text>';
+      pieEl.innerHTML = '<circle cx="100" cy="100" r="80" fill="#e2e8f0" />' +
+        '<text x="100" y="105" text-anchor="middle" fill="#64748b" font-size="12">暂无数据</text>';
       return;
     }
 

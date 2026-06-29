@@ -1,13 +1,13 @@
 :root {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --card-2: #273449;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #38bdf8;
-  --profit: #22c55e;
-  --loss: #ef4444;
-  --border: #334155;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --card-2: #eef2f7;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #0284c7;
+  --profit: #16a34a;
+  --loss: #dc2626;
+  --border: #e2e8f0;
 }
 
 * { box-sizing: border-box; }
@@ -110,7 +110,7 @@ td input:focus { outline: none; border-color: var(--accent); }
 /* 按钮 */
 button { cursor: pointer; border-radius: 8px; font-size: 0.9rem; }
 .add {
-  background: var(--accent); color: #00263a; border: none;
+  background: var(--accent); color: #ffffff; border: none;
   padding: 8px 14px; font-weight: 600;
 }
 .actions { display: flex; gap: 12px; margin-top: 16px; justify-content: center; }

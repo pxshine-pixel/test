@@ -1,14 +1,14 @@
 :root {
-  --bg: #0f172a;
-  --bg-2: #0b1220;
-  --card: #1e293b;
-  --card-2: #273449;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #38bdf8;
-  --up: #22c55e;
-  --down: #ef4444;
-  --border: #334155;
+  --bg: #ffffff;
+  --bg-2: #f1f5f9;
+  --card: #ffffff;
+  --card-2: #eef2f7;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #0284c7;
+  --up: #16a34a;
+  --down: #dc2626;
+  --border: #e2e8f0;
 }
 * { box-sizing: border-box; }
 body {
@@ -39,7 +39,7 @@ body {
 .sidebar { border-right: 1px solid var(--border); padding: 14px; background: var(--bg); display: flex; flex-direction: column; }
 .add-stock { display: grid; gap: 6px; margin-bottom: 12px; }
 .add-stock input { background: var(--card-2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); }
-.add-stock button { background: var(--accent); color: #00263a; border: none; border-radius: 7px; padding: 8px; font-weight: 600; cursor: pointer; }
+.add-stock button { background: var(--accent); color: #ffffff; border: none; border-radius: 7px; padding: 8px; font-weight: 600; cursor: pointer; }
 .add-stock input:focus { outline: none; border-color: var(--accent); }
 
 .watchlist { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
@@ -106,7 +106,7 @@ body {
 
 /* 按钮 */
 .btn { background: var(--card-2); color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; }
-.btn.primary { background: var(--accent); color: #00263a; border: none; font-weight: 600; }
+.btn.primary { background: var(--accent); color: #ffffff; border: none; font-weight: 600; }
 .btn:hover { opacity: 0.9; }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.82rem; padding: 4px; }

@@ -137,7 +137,7 @@
       const yTop = Y(b.high), yBot = Y(b.low);
       const h = Math.max(1, yBot - yTop - 1);
       const inVA = b.mid >= vaLo && b.mid <= vaHi;
-      const color = isPoc(b) ? '#f59e0b' : inVA ? '#38bdf8' : '#475569';
+      const color = isPoc(b) ? '#f59e0b' : inVA ? '#38bdf8' : '#cbd5e1';
       const op = isPoc(b) ? 0.95 : inVA ? 0.6 : 0.4;
       return `<rect x="${xVP.toFixed(1)}" y="${yTop.toFixed(1)}" width="${len.toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" opacity="${op}"/>`;
     }).join('');
@@ -162,7 +162,7 @@
       <svg viewBox="0 0 ${W} ${H}" class="chart-svg">
         ${ticks}${bands}${vpBars}
         ${maLine(60, '#a78bfa')}${maLine(20, '#38bdf8')}${maLine(5, '#f59e0b')}
-        <path d="${priceLine}" fill="none" stroke="#e2e8f0" stroke-width="1.6"/>
+        <path d="${priceLine}" fill="none" stroke="#0f172a" stroke-width="1.6"/>
         <line x1="${xVP.toFixed(1)}" y1="${pad.t}" x2="${xVP.toFixed(1)}" y2="${(pad.t + plotH).toFixed(1)}" class="grid"/>
         <text x="${x0}" y="${H - 7}" class="axis">${esc(bars[0].date || '')}</text>
         <text x="${(x0 + plotW).toFixed(1)}" y="${H - 7}" text-anchor="end" class="axis">${esc(bars[n - 1].date || '')}</text>
@@ -204,8 +204,8 @@
     $('macdChart').innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" class="chart-svg">
         <line x1="${x0}" y1="${zeroY.toFixed(1)}" x2="${(x0 + plotW).toFixed(1)}" y2="${zeroY.toFixed(1)}" class="grid"/>
-        ${hist}${lineOf(m.dif, '#e2e8f0')}${lineOf(m.dea, '#f59e0b')}
-        <text x="${x0 + 40}" y="${pad.t + 9}" fill="#e2e8f0" class="axis">DIF</text>
+        ${hist}${lineOf(m.dif, '#0f172a')}${lineOf(m.dea, '#f59e0b')}
+        <text x="${x0 + 40}" y="${pad.t + 9}" fill="#0f172a" class="axis">DIF</text>
         <text x="${x0 + 72}" y="${pad.t + 9}" fill="#f59e0b" class="axis">DEA</text>
       </svg>`;
   }

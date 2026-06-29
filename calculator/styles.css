@@ -1,13 +1,13 @@
 :root {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --card-2: #273449;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #38bdf8;
-  --profit: #22c55e;
-  --loss: #ef4444;
-  --border: #334155;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --card-2: #eef2f7;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #0284c7;
+  --profit: #16a34a;
+  --loss: #dc2626;
+  --border: #e2e8f0;
 }
 
 * { box-sizing: border-box; }
@@ -113,7 +113,7 @@ button {
   font-weight: 600;
   cursor: pointer;
   background: var(--accent);
-  color: #00263a;
+  color: #ffffff;
 }
 button.secondary { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
 button:hover { opacity: 0.9; }
