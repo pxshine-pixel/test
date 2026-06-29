@@ -3,7 +3,12 @@
   "version": "2.0.0",
   "description": "零依赖网页投资工具集：股价计算器、投资组合追踪器、个股长期跟踪系统、技术分析",
   "scripts": {
-    "test": "node calculator/calculator.test.js && node portfolio/portfolio.test.js && node tracker/tracker.test.js && node analysis/ta.test.js"
+    "test": "node calculator/calculator.test.js && node portfolio/portfolio.test.js && node tracker/tracker.test.js && node analysis/ta.test.js",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.105.0"
+  }
 }
