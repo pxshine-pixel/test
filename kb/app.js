@@ -3,15 +3,37 @@
   const $ = (id) => document.getElementById(id);
   const KEY = 'kb.stocks.v1';
   const SEL = 'kb.selected.v1';
+  const DEL = 'kb.deleted.v1';
 
-  let stocks = load();
+  // 随仓库部署的内置报告（reports.js 提供）与本地数据合并：
+  //   - 内置报告(bundled)未被本地编辑则不写入 localStorage，便于后续更新随部署生效
+  //   - 本地新增或编辑过的条目写入 localStorage，优先于内置
+  let deletedCodes = loadDeleted();
+  let stocks = mergeBundled(load(), deletedCodes);
   let selectedId = loadSel();
   let editing = false;
 
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(stocks)); } catch (e) { /* ignore */ } }
+  function save() {
+    // 仅持久化非内置（用户新增/编辑过）的条目
+    try { localStorage.setItem(KEY, JSON.stringify(stocks.filter((s) => !s.bundled))); } catch (e) { /* ignore */ }
+  }
+  function loadDeleted() { try { return JSON.parse(localStorage.getItem(DEL)) || []; } catch (e) { return []; } }
+  function saveDeleted() { try { localStorage.setItem(DEL, JSON.stringify(deletedCodes)); } catch (e) { /* ignore */ } }
   function loadSel() { try { return localStorage.getItem(SEL) || null; } catch (e) { return null; } }
   function saveSel() { try { localStorage.setItem(SEL, selectedId || ''); } catch (e) { /* ignore */ } }
+
+  function mergeBundled(local, deleted) {
+    const out = [...local];
+    const codes = new Set(local.map((s) => String(s.code)));
+    const del = new Set(deleted.map(String));
+    (window.KB_REPORTS || []).forEach((b) => {
+      if (!codes.has(String(b.code)) && !del.has(String(b.code))) {
+        out.push({ id: b.id || ('kb-' + b.code), code: b.code, name: b.name || '', report: b.report || '', updated: b.updated || '', bundled: true });
+      }
+    });
+    return out;
+  }
 
   function uid() {
     let n = 1;
@@ -74,7 +96,7 @@
       content.innerHTML = `<textarea id="md" class="md-edit" placeholder="用 Markdown 写基本面分析，或粘贴 /score 的报告…">${esc(s.report || '')}</textarea>`;
       const ta = $('md');
       ta.focus();
-      ta.addEventListener('input', () => { s.report = ta.value; s.updated = today(); save(); });
+      ta.addEventListener('input', () => { s.report = ta.value; s.updated = today(); s.bundled = false; save(); });
     } else {
       content.innerHTML = s.report
         ? `<div class="md-view">${KB.renderMarkdown(s.report)}</div>`
@@ -84,6 +106,7 @@
     $('editBtn').onclick = () => { editing = !editing; renderReport(); };
     $('delBtn').onclick = () => {
       if (!confirm(`删除「${s.name || s.code}」及其报告？`)) return;
+      if (!deletedCodes.map(String).includes(String(s.code))) { deletedCodes.push(s.code); saveDeleted(); }
       stocks = stocks.filter((x) => x.id !== s.id);
       selectedId = stocks.length ? stocks[0].id : null;
       editing = false; save(); saveSel(); renderAll();
@@ -109,6 +132,7 @@
     }
     s.report = tpl;
     s.updated = today();
+    s.bundled = false;
     save(); renderAll();
   }
 
@@ -123,6 +147,7 @@
     const name = $('newName').value.trim();
     if (!code) { alert('请输入股票代码'); return; }
     if (stocks.some((x) => x.code.toLowerCase() === code.toLowerCase())) { alert('该代码已存在'); return; }
+    deletedCodes = deletedCodes.filter((c) => String(c) !== String(code)); saveDeleted();
     const s = { id: uid(), code, name, report: '', updated: '' };
     stocks.push(s); selectedId = s.id; editing = false;
     $('newCode').value = ''; $('newName').value = '';
