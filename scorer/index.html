@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基本面打分</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>🎯 基本面打分</h1>
+      <div class="bridge-status" id="bridgeStatus" title="点击重新检测；Shift+点击设置数据源">
+        <span class="dot" id="bridgeDot"></span><span id="bridgeText">—</span>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="weights">
+        <span class="lbl">权重</span>
+        <label>成长 <input type="number" id="w-growth" min="0" step="5" value="30" /></label>
+        <label>盈利 <input type="number" id="w-profit" min="0" step="5" value="30" /></label>
+        <label>健康 <input type="number" id="w-health" min="0" step="5" value="20" /></label>
+        <label>估值 <input type="number" id="w-valuation" min="0" step="5" value="20" /></label>
+        <button class="btn ghost" id="resetW">默认</button>
+      </div>
+      <div class="add-row">
+        <input id="newCode" placeholder="代码 如 600519" />
+        <input id="newName" placeholder="名称（可选）" />
+        <button class="btn primary" id="addBtn">＋ 添加</button>
+        <button class="btn" id="pullAllBtn" title="从数据源拉取全部行指标">⤓ 拉取全部</button>
+        <button class="btn ghost" id="sampleBtn">示例</button>
+        <button class="btn ghost" id="exportBtn">导出 CSV</button>
+      </div>
+    </section>
+
+    <section class="result">
+      <div class="table-wrap">
+        <table class="score-table" id="table">
+          <thead>
+            <tr>
+              <th>#</th><th>名称</th><th>代码</th>
+              <th title="营收同比增速 %">营收%</th>
+              <th title="归母净利同比增速 %">净利%</th>
+              <th title="加权净资产收益率 %">ROE%</th>
+              <th title="销售毛利率 %">毛利%</th>
+              <th title="销售净利率 %">净利率%</th>
+              <th title="资产负债率 %">负债%</th>
+              <th>PE</th><th>PB</th>
+              <th class="sub">成长</th><th class="sub">盈利</th><th class="sub">健康</th><th class="sub">估值</th>
+              <th class="total-col">自动分</th>
+              <th title="填了则覆盖自动分">手动</th>
+              <th>评级</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="empty">还没有股票。点「添加」录入，或点「示例」体验。指标可手动填，也可点行尾「⤓」从数据源拉取。</p>
+    </section>
+
+    <footer>
+      <p class="disclaimer">阈值为 A 股经验值，不同行业差异大（银行/地产高负债属正常等），结果仅供横向初筛参考，不构成投资建议。数据仅存本地浏览器。</p>
+    </footer>
+  </div>
+
+  <script src="scorer.js"></script>
+  <script src="quotes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

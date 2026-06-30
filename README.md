@@ -23,6 +23,7 @@
 ├── portfolio/          # 投资组合追踪器
 ├── tracker/            # 个股长期跟踪系统（含 bridge.py OpenD 桥接服务）
 ├── analysis/           # 技术分析（形态/密集区/买卖信号，复用 bridge.py）
+├── scorer/             # 基本面打分（四维加权自动算分 + 可调权重/手动覆盖）
 ├── fundamentals/       # 基本面汇总排序（导入 /score 结果排序）
 ├── kb/                 # 基本面知识库（左股票/右报告）
 └── data-worker/        # 免费行情/财报数据 Worker（Cloudflare 云端数据源，可选）
