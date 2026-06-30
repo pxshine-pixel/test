@@ -4,9 +4,10 @@
   const KEY = 'scorer.state.v1';
   const METRICS = [
     ['revenueYoY', '营收%'], ['netProfitYoY', '净利%'], ['roe', 'ROE%'],
-    ['grossMargin', '毛利%'], ['netMargin', '净利率%'], ['debtRatio', '负债%'],
-    ['pe', 'PE'], ['pb', 'PB'],
+    ['grossMargin', '毛利%'], ['netMargin', '净利率%'], ['ocfToNp', '现金流%'],
+    ['debtRatio', '负债%'], ['pe', 'PE'], ['pb', 'PB'],
   ];
+  const DIMS = ['growth', 'profit', 'cashflow', 'health', 'valuation'];
 
   let state = load() || { stocks: [], weights: { ...Scorer.DEFAULT_WEIGHTS } };
 
@@ -18,6 +19,7 @@
     return {
       growth: numOr($('w-growth').value, 0),
       profit: numOr($('w-profit').value, 0),
+      cashflow: numOr($('w-cashflow').value, 0),
       health: numOr($('w-health').value, 0),
       valuation: numOr($('w-valuation').value, 0),
     };
@@ -37,8 +39,10 @@
     // 同步权重输入
     $('w-growth').value = state.weights.growth;
     $('w-profit').value = state.weights.profit;
+    $('w-cashflow').value = state.weights.cashflow;
     $('w-health').value = state.weights.health;
     $('w-valuation').value = state.weights.valuation;
+    $('preset').value = matchPreset(state.weights);
 
     const scored = state.stocks.map((s) => {
       const r = scoreOf(s);
@@ -56,19 +60,34 @@
       tr.dataset.id = s.id;
       const metricCells = METRICS.map(([k]) =>
         `<td><input class="m" data-id="${s.id}" data-k="${k}" type="number" step="0.01" value="${valAttr(s.metrics ? s.metrics[k] : '')}" /></td>`).join('');
-      const sub = (key) => { const d = r.dimensions.find((x) => x.key === key); return d && d.score != null ? d.score : '—'; };
       tr.innerHTML =
         `<td class="rank">${i + 1}</td>` +
         `<td><input class="name" data-id="${s.id}" value="${esc(s.name || '')}" placeholder="名称" /></td>` +
         `<td class="code">${esc(s.code)}</td>` +
         metricCells +
-        `<td class="sub">${sub('growth')}</td><td class="sub">${sub('profit')}</td><td class="sub">${sub('health')}</td><td class="sub">${sub('valuation')}</td>` +
+        subCells(r) +
         `<td class="total" style="background:${final == null ? '' : scoreColor(final)}"><strong>${r.total == null ? '—' : r.total}</strong></td>` +
         `<td><input class="ov" data-id="${s.id}" type="number" step="1" value="${valAttr(s.override)}" placeholder="—" /></td>` +
         `<td class="grade">${Scorer.gradeOf(final)}</td>` +
+        `<td class="flags">${flagsHtml(r.flags)}</td>` +
         `<td class="ops"><button class="mini pull" data-id="${s.id}" title="拉取指标">⤓</button><button class="mini del" data-id="${s.id}" title="删除">✕</button></td>`;
       tbody.appendChild(tr);
     });
+  }
+
+  function subCells(r) {
+    return DIMS.map((k) => { const d = r.dimensions.find((x) => x.key === k); return `<td class="sub">${d && d.score != null ? d.score : '—'}</td>`; }).join('');
+  }
+  function flagsHtml(flags) {
+    if (!flags || !flags.length) return '';
+    return flags.map((f) => `<span class="flag ${f.level}" title="${esc(f.label)}">${esc(f.label)}</span>`).join('');
+  }
+  function matchPreset(w) {
+    for (const name of Object.keys(Scorer.WEIGHT_PRESETS)) {
+      const p = Scorer.WEIGHT_PRESETS[name];
+      if (DIMS.every((k) => Number(p[k]) === Number(w[k]))) return name;
+    }
+    return '';
   }
 
   // 录入时就地更新派生列，不重排（避免光标跳动）
@@ -79,14 +98,15 @@
     const r = scoreOf(s);
     const final = finalOf(s, r.total);
     const subs = tr.querySelectorAll('td.sub');
-    ['growth', 'profit', 'health', 'valuation'].forEach((k, idx) => {
+    DIMS.forEach((k, idx) => {
       const d = r.dimensions.find((x) => x.key === k);
-      subs[idx].textContent = d && d.score != null ? d.score : '—';
+      if (subs[idx]) subs[idx].textContent = d && d.score != null ? d.score : '—';
     });
     const totalCell = tr.querySelector('td.total');
     totalCell.querySelector('strong').textContent = r.total == null ? '—' : r.total;
     totalCell.style.background = final == null ? '' : scoreColor(final);
     tr.querySelector('td.grade').textContent = Scorer.gradeOf(final);
+    const fc = tr.querySelector('td.flags'); if (fc) fc.innerHTML = flagsHtml(r.flags);
   }
 
   function scoreColor(v) {
@@ -118,8 +138,12 @@
     }
   });
 
-  ['w-growth', 'w-profit', 'w-health', 'w-valuation'].forEach((wid) => {
+  ['w-growth', 'w-profit', 'w-cashflow', 'w-health', 'w-valuation'].forEach((wid) => {
     $(wid).addEventListener('change', () => { state.weights = readWeights(); save(); render(); });
+  });
+  $('preset').addEventListener('change', (e) => {
+    const p = Scorer.WEIGHT_PRESETS[e.target.value];
+    if (p) { state.weights = { ...p }; save(); render(); }
   });
   $('resetW').onclick = () => { state.weights = { ...Scorer.DEFAULT_WEIGHTS }; save(); render(); };
 
@@ -162,7 +186,8 @@
     if (f && f.ok && f.financials && f.financials[0]) {
       const fin = f.financials[0];
       [['revenueYoY', 'revenueYoY'], ['netProfitYoY', 'netProfitYoY'], ['roe', 'roe'],
-       ['grossMargin', 'grossMargin'], ['netMargin', 'netMargin'], ['debtRatio', 'debtRatio']].forEach(([mk, fk]) => {
+       ['grossMargin', 'grossMargin'], ['netMargin', 'netMargin'], ['ocfToNp', 'ocfToNp'],
+       ['debtRatio', 'debtRatio']].forEach(([mk, fk]) => {
         if (fin[fk] != null) { s.metrics[mk] = fin[fk]; any = true; }
       });
     }
@@ -181,10 +206,10 @@
 
   $('sampleBtn').onclick = () => {
     state.stocks = [
-      { id: uid(), code: '600519', name: '贵州茅台', metrics: { revenueYoY: -1.21, netProfitYoY: -4.53, roe: 36.34, grossMargin: 91.93, netMargin: 47.8, debtRatio: 18, pe: 16.23, pb: 5.68 }, override: '' },
-      { id: uid(), code: '688678', name: '福立旺', metrics: { revenueYoY: 53.46, netProfitYoY: 1.26, roe: 6, grossMargin: 22, netMargin: 3, debtRatio: 45, pe: 60, pb: 3 }, override: '' },
-      { id: uid(), code: '300727', name: '润禾材料', metrics: { revenueYoY: 6.21, netProfitYoY: 24.66, roe: 9, grossMargin: 27.04, netMargin: 8.51, debtRatio: 40, pe: 30, pb: 2.2 }, override: '' },
-      { id: uid(), code: '000620', name: '盈新发展', metrics: { revenueYoY: -48.38, netProfitYoY: -682, roe: -5, grossMargin: 6.74, netMargin: -10, debtRatio: 58.49, pe: -12, pb: 6 }, override: '' },
+      { id: uid(), code: '600519', name: '贵州茅台', metrics: { revenueYoY: -1.21, netProfitYoY: -4.53, roe: 36.34, grossMargin: 91.93, netMargin: 47.8, ocfToNp: 95, debtRatio: 18, pe: 16.23, pb: 5.68 }, override: '' },
+      { id: uid(), code: '688678', name: '福立旺', metrics: { revenueYoY: 53.46, netProfitYoY: 1.26, roe: 6, grossMargin: 22, netMargin: 3, ocfToNp: 20, debtRatio: 45, pe: 60, pb: 3 }, override: '' },
+      { id: uid(), code: '300727', name: '润禾材料', metrics: { revenueYoY: 6.21, netProfitYoY: 24.66, roe: 9, grossMargin: 27.04, netMargin: 8.51, ocfToNp: 45, debtRatio: 40, pe: 30, pb: 2.2 }, override: '' },
+      { id: uid(), code: '000620', name: '盈新发展', metrics: { revenueYoY: -48.38, netProfitYoY: -682, roe: -5, grossMargin: 6.74, netMargin: -10, ocfToNp: -30, debtRatio: 58.49, pe: -12, pb: 6 }, override: '' },
     ];
     save(); render();
   };
@@ -193,13 +218,14 @@
     if (!state.stocks.length) return;
     const scored = state.stocks.map((s) => { const r = scoreOf(s); return { s, r, final: finalOf(s, r.total) }; })
       .sort((a, b) => (b.final == null ? -1 : b.final) - (a.final == null ? -1 : a.final));
-    const head = ['排名', '名称', '代码', ...METRICS.map(([, l]) => l), '成长', '盈利', '健康', '估值', '自动分', '手动', '最终分', '评级'];
+    const head = ['排名', '名称', '代码', ...METRICS.map(([, l]) => l), '成长', '盈利', '现金', '健康', '估值', '自动分', '手动', '最终分', '评级', '红旗'];
     const lines = [head.join(',')];
     scored.forEach((it, i) => {
       const { s, r, final } = it;
       const sub = (k) => { const d = r.dimensions.find((x) => x.key === k); return d && d.score != null ? d.score : ''; };
       const row = [i + 1, s.name || '', s.code, ...METRICS.map(([k]) => (s.metrics && s.metrics[k] != null ? s.metrics[k] : '')),
-        sub('growth'), sub('profit'), sub('health'), sub('valuation'), r.total == null ? '' : r.total, s.override || '', final == null ? '' : final, Scorer.gradeOf(final)];
+        ...DIMS.map(sub), r.total == null ? '' : r.total, s.override || '', final == null ? '' : final, Scorer.gradeOf(final),
+        (r.flags || []).map((f) => f.label).join(' ')];
       lines.push(row.map(csv).join(','));
     });
     const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });

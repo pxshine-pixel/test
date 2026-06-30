@@ -109,23 +109,35 @@ async function financials(url) {
     return json({ ok: false, error: '财务接口获取失败：' + e.message }, 502);
   }
   const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-  const financials = list.slice(0, 8).map((r) => ({
-    period: r.REPORTDATE || r.REPORT_DATE || r.STD_REPORT_DATE,
-    revenue: numOrNull(r.TOTALOPERATEREVE),            // 营业总收入(元)
-    revenueYoY: numOrNull(r.TOTALOPERATEREVETZ),       // 营收同比(%)
-    netProfit: numOrNull(r.PARENTNETPROFIT),           // 归母净利(元)
-    netProfitYoY: numOrNull(r.PARENTNETPROFITTZ),      // 净利同比(%)
-    roe: numOrNull(r.ROEJQ),                           // 加权ROE(%)
-    grossMargin: numOrNull(r.XSMLL),                   // 销售毛利率(%)
-    netMargin: numOrNull(r.XSJLL),                     // 销售净利率(%)
-    debtRatio: numOrNull(r.ZCFZL),                     // 资产负债率(%)
-    eps: numOrNull(r.EPSJB),                           // 每股收益
-  }));
+  const financials = list.slice(0, 8).map((r) => {
+    const netProfit = numOrNull(r.PARENTNETPROFIT);
+    // 经营现金流净额：字段名各版本不一，取首个命中的候选（待实测校准）
+    const ocf = numOrNull(firstOf(r, ['JYHDXJLLJE', 'NETCASHOPERATE', 'JYXJLL', 'MGJYXJJE']));
+    const ocfToNp = (ocf != null && netProfit != null && netProfit !== 0)
+      ? Math.round((ocf / netProfit) * 100 * 100) / 100 : null;  // 经营现金流/净利(%)
+    return {
+      period: r.REPORTDATE || r.REPORT_DATE || r.STD_REPORT_DATE,
+      revenue: numOrNull(r.TOTALOPERATEREVE),            // 营业总收入(元)
+      revenueYoY: numOrNull(r.TOTALOPERATEREVETZ),       // 营收同比(%)
+      netProfit,                                         // 归母净利(元)
+      netProfitYoY: numOrNull(r.PARENTNETPROFITTZ),      // 净利同比(%)
+      roe: numOrNull(r.ROEJQ),                           // 加权ROE(%)
+      grossMargin: numOrNull(r.XSMLL),                   // 销售毛利率(%)
+      netMargin: numOrNull(r.XSJLL),                     // 销售净利率(%)
+      debtRatio: numOrNull(r.ZCFZL),                     // 资产负债率(%)
+      ocfToNp,                                           // 经营现金流/净利(%)（字段待实测校准）
+      eps: numOrNull(r.EPSJB),                           // 每股收益
+    };
+  });
   const out = { ok: true, source: 'eastmoney', code: n.f10, financials };
   if (url.searchParams.get('debug')) out._raw = list.slice(0, 1);
   return json(out);
 }
 
+function firstOf(obj, keys) {
+  for (const k of keys) if (obj[k] != null && obj[k] !== '') return obj[k];
+  return null;
+}
 function numOrNull(v) {
   if (v == null || v === '' || v === '-' || v === '--' || v === '—') return null;
   const num = Number(v);

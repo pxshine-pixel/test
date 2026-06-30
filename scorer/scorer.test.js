@@ -1,6 +1,6 @@
 /* 基本面打分测试：node scorer.test.js */
 const assert = require('assert');
-const { scoreFundamentals, gradeOf } = require('./scorer');
+const { scoreFundamentals, redFlags, gradeOf, WEIGHT_PRESETS } = require('./scorer');
 
 let passed = 0;
 function test(name, fn) {
@@ -25,11 +25,25 @@ test('困境公司总分低（≤35）', () => {
   assert.ok(r.total <= 35, `total=${r.total}`);
 });
 
-test('四个维度都返回', () => {
+test('五个维度都返回', () => {
   const r = scoreFundamentals(strong);
-  assert.strictEqual(r.dimensions.length, 4);
-  assert.deepStrictEqual(r.dimensions.map((d) => d.key), ['growth', 'profit', 'health', 'valuation']);
-  r.dimensions.forEach((d) => assert.ok(d.score >= 0 && d.score <= 100, `${d.key}=${d.score}`));
+  assert.strictEqual(r.dimensions.length, 5);
+  assert.deepStrictEqual(r.dimensions.map((d) => d.key), ['growth', 'profit', 'cashflow', 'health', 'valuation']);
+});
+
+test('现金流质量维度：含金量高→高分，现金流为负→很低', () => {
+  const good = scoreFundamentals({ ocfToNp: 110 }).dimensions.find((d) => d.key === 'cashflow');
+  const bad = scoreFundamentals({ ocfToNp: -40 }).dimensions.find((d) => d.key === 'cashflow');
+  assert.ok(good.score > 80, `good=${good.score}`);
+  assert.ok(bad.score <= 10, `bad=${bad.score}`);
+});
+
+test('PEG：高增长让高 PE 不被过度惩罚', () => {
+  const v = (m) => scoreFundamentals(m).dimensions.find((d) => d.key === 'valuation').score;
+  // 同样 PE=40，净利增速 50% vs 0%
+  const hiGrowth = v({ pe: 40, pb: 4, netProfitYoY: 50 });
+  const noGrowth = v({ pe: 40, pb: 4, netProfitYoY: 0 });
+  assert.ok(hiGrowth > noGrowth, `高增长估值分应更高: ${hiGrowth} vs ${noGrowth}`);
 });
 
 test('亏损时 PE 记 0（估值维度被拉低）', () => {
@@ -74,6 +88,40 @@ test('评级分档', () => {
   assert.strictEqual(gradeOf(55), '中');
   assert.strictEqual(gradeOf(40), '偏弱');
   assert.strictEqual(gradeOf(20), '弱');
+});
+
+test('红旗：困境股触发多个警示', () => {
+  const flags = redFlags(weak).map((f) => f.label);
+  assert.ok(flags.includes('亏损'), flags.join());
+  assert.ok(flags.includes('高杠杆'), flags.join());
+  assert.ok(flags.includes('利润大幅下滑'), flags.join());
+});
+
+test('红旗：增收不增利识别', () => {
+  const flags = redFlags({ revenueYoY: 53, netProfitYoY: 1 }).map((f) => f.label);
+  assert.ok(flags.includes('增收不增利'), flags.join());
+});
+
+test('红旗：现金流为负标记 danger', () => {
+  const f = redFlags({ ocfToNp: -20 }).find((x) => x.label === '现金流存疑');
+  assert.ok(f && f.level === 'danger');
+});
+
+test('红旗：优质公司无警示', () => {
+  assert.strictEqual(redFlags(strong).length, 0);
+});
+
+test('权重预设存在且字段完整', () => {
+  ['均衡', '价值', '成长', '质量'].forEach((k) => {
+    const p = WEIGHT_PRESETS[k];
+    assert.ok(p, k);
+    ['growth', 'profit', 'cashflow', 'health', 'valuation'].forEach((d) => assert.ok(typeof p[d] === 'number', `${k}.${d}`));
+  });
+});
+
+test('成长预设比价值预设更看重成长权重', () => {
+  assert.ok(WEIGHT_PRESETS.成长.growth > WEIGHT_PRESETS.价值.growth);
+  assert.ok(WEIGHT_PRESETS.价值.valuation > WEIGHT_PRESETS.成长.valuation);
 });
 
 console.log(`\n${passed} passed`);

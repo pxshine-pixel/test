@@ -43,6 +43,12 @@ input:focus { outline: none; border-color: var(--accent); }
 .score-table td.grade { font-weight: 600; }
 .score-table tbody tr:hover { background: #f8fafc; }
 
+.score-table td.flags { white-space: normal; max-width: 130px; text-align: left; }
+.flag { display: inline-block; font-size: 0.68rem; padding: 1px 5px; border-radius: 4px; margin: 1px; white-space: nowrap; }
+.flag.warn { background: rgba(217, 119, 6, 0.14); color: #b45309; }
+.flag.danger { background: rgba(220, 38, 38, 0.14); color: var(--down); }
+.preset-lbl select { background: var(--card-2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 8px; color: var(--text); }
+
 .mini { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.9rem; padding: 2px 4px; }
 .mini.del:hover { color: var(--down); } .mini.pull:hover { color: var(--accent); }
 

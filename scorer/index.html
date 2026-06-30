@@ -18,10 +18,20 @@
     <section class="controls">
       <div class="weights">
         <span class="lbl">权重</span>
-        <label>成长 <input type="number" id="w-growth" min="0" step="5" value="30" /></label>
-        <label>盈利 <input type="number" id="w-profit" min="0" step="5" value="30" /></label>
-        <label>健康 <input type="number" id="w-health" min="0" step="5" value="20" /></label>
-        <label>估值 <input type="number" id="w-valuation" min="0" step="5" value="20" /></label>
+        <label class="preset-lbl">预设
+          <select id="preset">
+            <option value="">自定义</option>
+            <option value="均衡">均衡</option>
+            <option value="价值">价值</option>
+            <option value="成长">成长</option>
+            <option value="质量">质量</option>
+          </select>
+        </label>
+        <label>成长 <input type="number" id="w-growth" min="0" step="5" value="25" /></label>
+        <label>盈利 <input type="number" id="w-profit" min="0" step="5" value="25" /></label>
+        <label>现金 <input type="number" id="w-cashflow" min="0" step="5" value="20" /></label>
+        <label>健康 <input type="number" id="w-health" min="0" step="5" value="15" /></label>
+        <label>估值 <input type="number" id="w-valuation" min="0" step="5" value="15" /></label>
         <button class="btn ghost" id="resetW">默认</button>
       </div>
       <div class="add-row">
@@ -45,12 +55,13 @@
               <th title="加权净资产收益率 %">ROE%</th>
               <th title="销售毛利率 %">毛利%</th>
               <th title="销售净利率 %">净利率%</th>
+              <th title="经营现金流净额 / 归母净利 %（利润含金量）">现金流%</th>
               <th title="资产负债率 %">负债%</th>
               <th>PE</th><th>PB</th>
-              <th class="sub">成长</th><th class="sub">盈利</th><th class="sub">健康</th><th class="sub">估值</th>
+              <th class="sub">成长</th><th class="sub">盈利</th><th class="sub">现金</th><th class="sub">健康</th><th class="sub">估值</th>
               <th class="total-col">自动分</th>
               <th title="填了则覆盖自动分">手动</th>
-              <th>评级</th><th></th>
+              <th>评级</th><th title="红旗警示">⚑</th><th></th>
             </tr>
           </thead>
           <tbody id="rows"></tbody>
@@ -64,8 +75,8 @@
     </footer>
   </div>
 
-  <script src="scorer.js"></script>
-  <script src="quotes.js"></script>
-  <script src="app.js"></script>
+  <script src="scorer.js?v=2"></script>
+  <script src="quotes.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
