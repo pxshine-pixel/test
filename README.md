@@ -10,6 +10,7 @@
 | 📊 投资组合追踪器 | [`portfolio/`](portfolio/) | 多只持仓管理、总盈亏汇总与资产配置饼图 |
 | 📡 个股长期跟踪系统 | [`tracker/`](tracker/) | 时间序列快照、累计/年化收益、长期曲线，接富途 OpenD 实时行情 |
 | 📐 技术分析 | [`analysis/`](analysis/) | 均线/MACD/RSI/KDJ 形态、密集成交区、买卖阶段信号（含示例数据） |
+| 🏅 基本面汇总排序 | [`fundamentals/`](fundamentals/) | 粘贴 /score 打分后的股票，自动识别分数列并按基本面分排序 |
 
 ## 目录结构
 
@@ -20,7 +21,8 @@
 ├── calculator/         # 股价计算器
 ├── portfolio/          # 投资组合追踪器
 ├── tracker/            # 个股长期跟踪系统（含 bridge.py OpenD 桥接服务）
-└── analysis/           # 技术分析（形态/密集区/买卖信号，复用 bridge.py）
+├── analysis/           # 技术分析（形态/密集区/买卖信号，复用 bridge.py）
+└── fundamentals/       # 基本面汇总排序（导入 /score 结果排序）
 ```
 
 每个工具目录内都有独立的 README 说明其功能与用法。
