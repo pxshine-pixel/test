@@ -23,7 +23,14 @@
           <input id="newName" placeholder="名称（可选，自动取）" />
           <button id="addBtn" class="btn primary">＋</button>
         </div>
-        <input id="search" class="search" placeholder="搜索名称 / 代码…" />
+        <div class="list-controls">
+          <input id="search" class="search" placeholder="搜索名称 / 代码…" />
+          <select id="sortBy" class="sort" title="排序方式">
+            <option value="">默认</option>
+            <option value="score-desc">分数高→低</option>
+            <option value="score-asc">分数低→高</option>
+          </select>
+        </div>
         <ul class="stock-list" id="stockList"></ul>
         <div class="side-actions">
           <button id="exportBtn" class="link">导出</button>
@@ -45,9 +52,9 @@
   </div>
 
   <script src="../scorer/scorer.js?v=2"></script>
-  <script src="kb.js?v=6"></script>
-  <script src="reports.js?v=6"></script>
-  <script src="quotes.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="kb.js?v=7"></script>
+  <script src="reports.js?v=7"></script>
+  <script src="quotes.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

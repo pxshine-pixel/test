@@ -56,15 +56,32 @@
   function renderList() {
     const ul = $('stockList');
     const q = $('search').value;
-    const list = KB.filterStocks(stocks, q);
+    let list = KB.filterStocks(stocks, q);
     ul.innerHTML = '';
     if (!stocks.length) { ul.innerHTML = '<li class="empty">还没有股票，左上角添加</li>'; return; }
     if (!list.length) { ul.innerHTML = '<li class="empty">无匹配结果</li>'; return; }
+
+    const sortBy = $('sortBy') ? $('sortBy').value : '';
+    if (sortBy === 'score-desc' || sortBy === 'score-asc') {
+      const dir = sortBy === 'score-asc' ? 1 : -1;
+      list = list.map((s) => ({ s, sc: scoreFor(s.code) }))
+        .sort((a, b) => {
+          const av = a.sc ? a.sc.total : null, bv = b.sc ? b.sc.total : null;
+          if (av == null && bv == null) return 0;
+          if (av == null) return 1;   // 未评分永远排末尾
+          if (bv == null) return -1;
+          return (av - bv) * dir;
+        })
+        .map((x) => x.s);
+    }
+
     list.forEach((s) => {
       const li = document.createElement('li');
       li.className = 'stock-item' + (s.id === selectedId ? ' active' : '');
       li.dataset.id = s.id;
-      li.innerHTML = `<span class="s-name">${esc(s.name || '未命名')}</span><span class="s-code">${esc(s.code)}</span>`;
+      const sc = scoreFor(s.code);
+      const chip = sc ? `<span class="s-score ${sc.total >= 65 ? 'good' : sc.total >= 50 ? 'mid' : 'weak'}">${sc.total}</span>` : '';
+      li.innerHTML = `<span class="s-name">${esc(s.name || '未命名')}</span>${chip}<span class="s-code">${esc(s.code)}</span>`;
       ul.appendChild(li);
     });
   }
@@ -189,6 +206,13 @@
   };
   $('newCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('addBtn').click(); });
   $('search').addEventListener('input', renderList);
+  if ($('sortBy')) {
+    try { $('sortBy').value = localStorage.getItem('kb.sortBy') || ''; } catch (e) { /* ignore */ }
+    $('sortBy').addEventListener('change', () => {
+      try { localStorage.setItem('kb.sortBy', $('sortBy').value); } catch (e) { /* ignore */ }
+      renderList();
+    });
+  }
 
   $('stockList').onclick = (e) => {
     const li = e.target.closest('.stock-item');

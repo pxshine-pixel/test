@@ -32,16 +32,24 @@ body {
 .add-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-bottom: 8px; }
 .add-row input { background: var(--card-2); border: 1px solid var(--border); border-radius: 7px; padding: 8px; color: var(--text); min-width: 0; }
 .add-row input:focus { outline: none; border-color: var(--accent); }
-.search { width: 100%; background: var(--card-2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); margin-bottom: 10px; }
+.list-controls { display: flex; gap: 8px; margin-bottom: 10px; }
+.search { width: 100%; background: var(--card-2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); }
+.list-controls .search { flex: 1; }
 .search:focus { outline: none; border-color: var(--accent); }
+.sort { background: var(--card-2); border: 1px solid var(--border); border-radius: 7px; padding: 8px; color: var(--text); font-size: 0.82rem; }
+.sort:focus { outline: none; border-color: var(--accent); }
 
 .stock-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
 .stock-list .empty { color: var(--muted); text-align: center; padding: 14px; font-size: 0.85rem; }
-.stock-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; }
+.stock-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; }
 .stock-item:hover { background: var(--card-2); }
 .stock-item.active { background: var(--card-2); border-color: var(--accent); }
-.s-name { font-weight: 600; }
+.s-name { font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .s-code { color: var(--muted); font-size: 0.8rem; }
+.s-score { font-size: 0.76rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.s-score.good { background: rgba(22,163,74,.14); color: var(--up); }
+.s-score.mid { background: rgba(2,132,199,.12); color: var(--accent); }
+.s-score.weak { background: rgba(220,38,38,.12); color: var(--down); }
 
 .side-actions { display: flex; gap: 12px; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 8px; }
 
