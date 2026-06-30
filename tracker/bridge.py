@@ -20,27 +20,73 @@ OpenD 本地桥接服务
         实时快照：现价、涨跌幅、PE、PB、股息率、名称等。
     GET /kline?code=SH.600519&num=120&ktype=K_DAY
         历史 K 线收盘价（用于回填长期价格曲线）。
+    GET /financials?code=SH.600519&quarter=ANNUAL
+        单只股票的基本面指标（营收/净利同比、ROE、毛利率、净利率、负债率、
+        经营现金流/净利 等），供「基本面打分」拉取。底层用 OpenD 的条件选股
+        get_stock_filter 接口；首次会扫描该股所在市场并缓存，后续命中缓存。
+    GET /screen?market=A&quarter=ANNUAL&peMax=30&roeMin=10&revenueYoYMin=15&...
+        全市场基本面筛（条件选股）：按 PE/PB/ROE/营收增速/净利增速/负债率/市值
+        等条件扫描 A 股（SH+SZ），返回命中股票及其基本面字段，网页端再用打分核心
+        排序。条件越具体，返回越快（富途服务端已过滤）。
+    GET /fields
+        列出本机 futu 版本里可用的 StockField / FinancialQuarter，便于字段校准。
 
 代码格式：支持 "SH.600519" / "600519" / "sh600519" / "00700" 等，自动补全市场前缀。
 所有响应均为 JSON，并带 Access-Control-Allow-Origin: *，便于本地静态页直接 fetch。
+
+注意：条件选股有频率限制（约 30 秒 10 次），本服务在翻页间自动节流；无条件的
+全市场扫描（如单只 /financials 首次拉取）会较慢（数十秒），命中缓存后即时返回。
+字段名（StockField 各枚举）可能随 futu 版本不同，若某接口报字段错误，先用 /fields
+查看本机可用字段，再到 SCREEN_FIELDS 表里对齐。
 """
 
 import argparse
 import json
 import re
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 try:
     from futu import (
         OpenQuoteContext, RET_OK, KLType, AuType, SubType,
+        Market, SimpleFilter, FinancialFilter, StockField, FinancialQuarter,
     )
 except ImportError:  # 友好提示而非堆栈
     OpenQuoteContext = None
+    Market = SimpleFilter = FinancialFilter = StockField = FinancialQuarter = None
     _IMPORT_ERROR = "未安装 futu-api，请先运行：pip install futu-api"
 else:
     _IMPORT_ERROR = None
+
+# 翻页节流（秒）：条件选股约 30s/10 次，每页间隔 ≥3s 比较安全
+THROTTLE_SEC = 3.1
+# 全市场基本面扫描的缓存有效期（秒）：基本面按季更新，缓存 12 小时足够
+SCAN_CACHE_TTL = 12 * 3600
+# 单次扫描安全上限（行）：避免极端情况下无限翻页
+SCAN_MAX_ROWS = 6000
+
+# 基本面字段映射：(打分用的 metric 名, futu StockField 枚举名, 'simple' 快照类 / 'financial' 财报类)
+# financial 类需要指定财报期（quarter）。字段名按 futu 版本可能微调，可用 /fields 校准。
+SCREEN_FIELDS = [
+    ('price',        'CUR_PRICE',              'simple'),
+    ('pe',           'PE_TTM',                 'simple'),
+    ('pb',           'PB_RATE',                'simple'),
+    ('marketCap',    'TOTAL_MARKET_VAL',       'simple'),
+    ('revenueYoY',   'SUM_OF_BUSINESS_GROWTH', 'financial'),
+    ('netProfitYoY', 'NET_PROFIT_GROWTH',      'financial'),
+    ('roe',          'RETURN_ON_EQUITY_RATE',  'financial'),
+    ('grossMargin',  'GROSS_PROFIT_RATE',      'financial'),
+    ('netMargin',    'NET_PROFIT_RATE',        'financial'),
+    ('debtRatio',    'DEBT_ASSET_RATE',        'financial'),
+    ('netProfit',    'NET_PROFIT',             'financial'),
+    ('ocf',          'OPERATING_CASH_FLOW_TTM','financial'),
+]
+
+# 全市场扫描结果缓存：{(market, quarter): {'ts':.., 'rows': {code: row}}}
+_SCAN_CACHE = {}
+_SCAN_LOCK = threading.Lock()
 
 
 # ----------------------------- 行情上下文（单例，复用连接） -----------------------------
@@ -187,6 +233,193 @@ def _jsonable(data):
         return str(data)
 
 
+# ----------------------------- 基本面筛 / 条件选股 -----------------------------
+def _quarter(name):
+    """财报期名 → FinancialQuarter 枚举（默认年报）。"""
+    return getattr(FinancialQuarter, str(name or 'ANNUAL').upper(), FinancialQuarter.ANNUAL)
+
+
+def _markets(name):
+    """市场名 → [Market...]；A/CN/ALL = 沪深两市。"""
+    name = str(name or 'A').upper()
+    if name in ('A', 'CN', 'ALL'):
+        return [Market.SH, Market.SZ]
+    return [getattr(Market, name, Market.SH)]
+
+
+def market_of(code):
+    """归一化代码（SH.600519）→ Market 枚举。"""
+    pre = str(code).split('.')[0]
+    return {'SH': getattr(Market, 'SH', None), 'SZ': getattr(Market, 'SZ', None),
+            'HK': getattr(Market, 'HK', None), 'US': getattr(Market, 'US', None)}.get(pre)
+
+
+def build_filters(quarter_name, conditions):
+    """按 SCREEN_FIELDS 构造 filter_list；conditions: {metric: (min, max)}。
+    设了条件的字段交给富途服务端过滤，其余字段 is_no_filter=True 仅取值。
+    返回 (filter_list, specs)；specs 为 [(metric, filter_obj)]，用于回读每只股票的字段值。
+    跳过本机 futu 版本不存在的字段（不会整体报错）。"""
+    filters, specs, skipped = [], [], []
+    quarter = _quarter(quarter_name)
+    for metric, fieldname, kind in SCREEN_FIELDS:
+        field = getattr(StockField, fieldname, None)
+        if field is None:
+            skipped.append(fieldname)
+            continue
+        fo = SimpleFilter() if kind == 'simple' else FinancialFilter()
+        fo.stock_field = field
+        if kind == 'financial':
+            fo.quarter = quarter
+        cond = conditions.get(metric)
+        if cond and (cond[0] is not None or cond[1] is not None):
+            fo.is_no_filter = False
+            if cond[0] is not None:
+                fo.filter_min = cond[0]
+            if cond[1] is not None:
+                fo.filter_max = cond[1]
+        else:
+            fo.is_no_filter = True
+        filters.append(fo)
+        specs.append((metric, fo))
+    return filters, specs, skipped
+
+
+def _map_row(item, specs):
+    """把一条 FilterStockData 映射成 {code, name, 各 metric}。"""
+    row = {'code': getattr(item, 'stock_code', None), 'name': getattr(item, 'stock_name', None)}
+    for metric, fo in specs:
+        try:
+            row[metric] = _f(item[fo])  # FilterStockData 支持按 filter 对象索引取值
+        except Exception:
+            row[metric] = None
+    # 派生：经营现金流 / 归母净利（含金量）。TTM 现金流 vs 期净利，量纲近似，仅作参考。
+    ocf, np = row.get('ocf'), row.get('netProfit')
+    if ocf is not None and np:
+        try:
+            row['ocfToNp'] = round(ocf / np * 100, 2)
+        except (TypeError, ZeroDivisionError):
+            row['ocfToNp'] = None
+    # 市值转「亿」更易读（前端也可直接用原值）
+    if row.get('marketCap') is not None:
+        row['marketCapYi'] = round(row['marketCap'] / 1e8, 2)
+    return row
+
+
+def scan_market(market, filters, specs, limit=None):
+    """对单个市场分页扫描，翻页间节流。返回 [row...]。"""
+    ctx = HUB.ctx()
+    rows, begin = [], 0
+    while True:
+        ret, data = ctx.get_stock_filter(market=market, filter_list=filters, begin=begin, num=200)
+        if ret != RET_OK:
+            raise RuntimeError(f'条件选股失败: {data}')
+        last_page, _all_count, ret_list = data
+        rows.extend(_map_row(it, specs) for it in ret_list)
+        begin += 200
+        if last_page or not ret_list or begin >= SCAN_MAX_ROWS or (limit and len(rows) >= limit):
+            break
+        time.sleep(THROTTLE_SEC)  # 频率限制
+    return rows
+
+
+def market_financials(market, quarter_name):
+    """缓存的全市场基本面（无条件扫描），返回 {code: row}。首次较慢，之后命中缓存。"""
+    key = (str(market), str(quarter_name).upper())
+    now = time.time()
+    with _SCAN_LOCK:
+        ent = _SCAN_CACHE.get(key)
+        if ent and now - ent['ts'] < SCAN_CACHE_TTL:
+            return ent['rows']
+    filters, specs, _ = build_filters(quarter_name, {})
+    rows = {r['code']: r for r in scan_market(market, filters, specs) if r.get('code')}
+    with _SCAN_LOCK:
+        _SCAN_CACHE[key] = {'ts': time.time(), 'rows': rows}
+    return rows
+
+
+def parse_conditions(q):
+    """从 query 解析 <metric>Min / <metric>Max。市值条件用「亿」自动 ×1e8。"""
+    cond = {}
+    metrics = [m for (m, _f1, _k) in SCREEN_FIELDS]
+    aliases = {'revYoY': 'revenueYoY', 'npYoY': 'netProfitYoY', 'roeRate': 'roe'}
+    for metric in metrics:
+        lo = _qnum(q, metric + 'Min')
+        hi = _qnum(q, metric + 'Max')
+        if metric == 'marketCap':
+            lo = lo * 1e8 if lo is not None else None
+            hi = hi * 1e8 if hi is not None else None
+        if lo is not None or hi is not None:
+            cond[metric] = (lo, hi)
+    for alias, metric in aliases.items():
+        lo, hi = _qnum(q, alias + 'Min'), _qnum(q, alias + 'Max')
+        if (lo is not None or hi is not None) and metric not in cond:
+            cond[metric] = (lo, hi)
+    return cond
+
+
+def _qnum(q, key):
+    try:
+        v = q.get(key, [None])[0]
+        return float(v) if v not in (None, '') else None
+    except (TypeError, ValueError):
+        return None
+
+
+def do_financials(code, quarter_name):
+    code = normalize_code(code)
+    if not code:
+        return 400, {'ok': False, 'error': '缺少有效的 code 参数'}
+    if _IMPORT_ERROR:
+        return 503, {'ok': False, 'error': _IMPORT_ERROR}
+    market = market_of(code)
+    if market is None:
+        return 400, {'ok': False, 'error': f'无法识别市场: {code}'}
+    try:
+        rows = market_financials(market, quarter_name)
+        row = rows.get(code)
+        if not row:
+            return 200, {'ok': True, 'financials': [], 'note': f'{code} 不在 {quarter_name} 筛选结果中（可能停牌/无财报）'}
+        return 200, {'ok': True, 'financials': [row]}
+    except Exception as e:
+        HUB.reset()
+        return 502, {'ok': False, 'error': f'查询基本面失败: {e}'}
+
+
+def do_screen(q):
+    if _IMPORT_ERROR:
+        return 503, {'ok': False, 'error': _IMPORT_ERROR}
+    quarter = q.get('quarter', ['ANNUAL'])[0]
+    market_name = q.get('market', ['A'])[0]
+    limit = int(q.get('limit', ['300'])[0] or 300)
+    conditions = parse_conditions(q)
+    try:
+        filters, specs, skipped = build_filters(quarter, conditions)
+        rows = []
+        for mk in _markets(market_name):
+            rows.extend(scan_market(mk, filters, specs, limit=(None if conditions else limit)))
+        rows = rows[:limit] if limit else rows
+        out = {'ok': True, 'count': len(rows), 'quarter': quarter, 'market': market_name,
+               'conditions': {k: v for k, v in conditions.items()}, 'rows': rows}
+        if skipped:
+            out['skippedFields'] = skipped  # 本机 futu 不支持的字段，便于校准
+        if not conditions:
+            out['note'] = '未设条件：仅取前若干只（建议加 PE/ROE/增速等条件以缩小范围、加快返回）'
+        return 200, out
+    except Exception as e:
+        HUB.reset()
+        return 502, {'ok': False, 'error': f'基本面筛失败: {e}'}
+
+
+def do_fields():
+    """列出本机 futu 可用的 StockField / FinancialQuarter，便于字段校准。"""
+    if _IMPORT_ERROR:
+        return 503, {'ok': False, 'error': _IMPORT_ERROR}
+    fields = [{'metric': m, 'field': f, 'kind': k, 'available': hasattr(StockField, f)}
+              for (m, f, k) in SCREEN_FIELDS]
+    quarters = [x for x in dir(FinancialQuarter) if not x.startswith('_')] if FinancialQuarter else []
+    return 200, {'ok': True, 'fields': fields, 'quarters': quarters}
+
+
 # ----------------------------- HTTP 处理 -----------------------------
 class Handler(BaseHTTPRequestHandler):
     def _send(self, status, payload):
@@ -222,6 +455,14 @@ class Handler(BaseHTTPRequestHandler):
                 num = int(q.get('num', ['120'])[0])
                 ktype = q.get('ktype', ['K_DAY'])[0]
                 status, payload = do_kline(code, num, ktype)
+            elif path == '/financials':
+                code = (q.get('code', [''])[0])
+                quarter = q.get('quarter', ['ANNUAL'])[0]
+                status, payload = do_financials(code, quarter)
+            elif path == '/screen':
+                status, payload = do_screen(q)
+            elif path == '/fields':
+                status, payload = do_fields()
             else:
                 status, payload = 404, {'ok': False, 'error': f'未知路径: {path}'}
         except Exception as e:

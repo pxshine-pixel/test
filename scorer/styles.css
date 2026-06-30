@@ -55,3 +55,11 @@ input:focus { outline: none; border-color: var(--accent); }
 .empty { color: var(--muted); text-align: center; padding: 22px; font-size: 0.9rem; }
 footer { margin-top: 18px; }
 .disclaimer { color: var(--muted); font-size: 0.8rem; text-align: center; }
+
+/* 全市场基本面筛面板 */
+.screen-panel { border: 1px solid var(--border); border-radius: 9px; background: var(--card); padding: 4px 12px; }
+.screen-panel summary { cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--accent); padding: 8px 0; user-select: none; }
+.screen-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 6px 0 12px; }
+.screen-form label { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
+.screen-form input[type="number"] { width: 84px; }
+.screen-hint { flex-basis: 100%; color: var(--muted); font-size: 0.8rem; }

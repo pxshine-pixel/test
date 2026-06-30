@@ -42,6 +42,38 @@
         <button class="btn ghost" id="sampleBtn">示例</button>
         <button class="btn ghost" id="exportBtn">导出 CSV</button>
       </div>
+
+      <details class="screen-panel" id="screenPanel">
+        <summary>🔍 全市场基本面筛（OpenD 条件选股）</summary>
+        <div class="screen-form">
+          <label>市场
+            <select id="sc-market">
+              <option value="A">沪深 A 股</option>
+              <option value="SH">仅上海</option>
+              <option value="SZ">仅深圳</option>
+            </select>
+          </label>
+          <label>财报期
+            <select id="sc-quarter">
+              <option value="ANNUAL">年报</option>
+              <option value="MOST_RECENT_QUARTER">最近季报</option>
+              <option value="INTERIM">中报</option>
+              <option value="THIRD_QUARTER">三季报</option>
+              <option value="FIRST_QUARTER">一季报</option>
+            </select>
+          </label>
+          <label>PE ≤ <input type="number" id="sc-peMax" step="1" placeholder="如 30" /></label>
+          <label>PB ≤ <input type="number" id="sc-pbMax" step="0.1" placeholder="如 5" /></label>
+          <label>ROE ≥ <input type="number" id="sc-roeMin" step="1" placeholder="如 10" /></label>
+          <label>营收增速 ≥ <input type="number" id="sc-revenueYoYMin" step="1" placeholder="%" /></label>
+          <label>净利增速 ≥ <input type="number" id="sc-netProfitYoYMin" step="1" placeholder="%" /></label>
+          <label>负债率 ≤ <input type="number" id="sc-debtRatioMax" step="1" placeholder="%" /></label>
+          <label>市值 ≥ <input type="number" id="sc-marketCapMin" step="1" placeholder="亿" /></label>
+          <label>数量上限 <input type="number" id="sc-limit" step="50" value="300" /></label>
+          <button class="btn primary" id="screenBtn">筛选并打分</button>
+          <span class="screen-hint" id="screenHint">建议至少设一个条件；条件越具体返回越快。结果会替换上方列表。</span>
+        </div>
+      </details>
     </section>
 
     <section class="result">
@@ -75,8 +107,8 @@
     </footer>
   </div>
 
-  <script src="scorer.js?v=3"></script>
-  <script src="quotes.js?v=3"></script>
-  <script src="app.js?v=3"></script>
+  <script src="scorer.js?v=4"></script>
+  <script src="quotes.js?v=4"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

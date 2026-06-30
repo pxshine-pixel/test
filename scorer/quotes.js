@@ -16,7 +16,17 @@
   }
   function health() { return getJSON('/health', 5000); }
   function quote(code) { return getJSON('/quote?code=' + encodeURIComponent(code)); }
-  function financials(code) { return getJSON('/financials?code=' + encodeURIComponent(code), 15000); }
+  // 首次 /financials 会全市场扫描该股所在市场（数十秒），命中缓存后即时；故超时放宽
+  function financials(code, quarter) {
+    return getJSON('/financials?code=' + encodeURIComponent(code) + (quarter ? '&quarter=' + encodeURIComponent(quarter) : ''), 90000);
+  }
+  // 全市场基本面筛（条件选股）。params: {market, quarter, limit, peMax, pbMax, roeMin, revenueYoYMin, netProfitYoYMin, debtRatioMax, marketCapMin}
+  function screen(params) {
+    const qs = Object.keys(params || {})
+      .filter((k) => params[k] !== '' && params[k] != null)
+      .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
+    return getJSON('/screen?' + qs, 120000);
+  }
 
-  global.Quotes = { base, setBase, health, quote, financials, DEFAULT_BASE };
+  global.Quotes = { base, setBase, health, quote, financials, screen, DEFAULT_BASE };
 })(window);

@@ -241,6 +241,39 @@
   };
   function csv(v) { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
 
+  /* ---------- 全市场基本面筛（OpenD 条件选股） ---------- */
+  const METRIC_KEYS = ['revenueYoY', 'netProfitYoY', 'roe', 'grossMargin', 'netMargin', 'ocfToNp', 'debtRatio', 'pe', 'pb'];
+  function screenRowToStock(r) {
+    const m = {};
+    METRIC_KEYS.forEach((k) => { if (r[k] != null && Number.isFinite(Number(r[k]))) m[k] = Number(r[k]); });
+    return { id: uid(), code: String(r.code || '').replace(/^(SH|SZ|HK|US)\./i, ''), name: r.name || '', metrics: m, override: '' };
+  }
+
+  const screenBtn = $('screenBtn');
+  if (screenBtn) screenBtn.onclick = async () => {
+    const params = { market: $('sc-market').value, quarter: $('sc-quarter').value, limit: $('sc-limit').value || 300 };
+    [['peMax', 'sc-peMax'], ['pbMax', 'sc-pbMax'], ['roeMin', 'sc-roeMin'], ['revenueYoYMin', 'sc-revenueYoYMin'],
+     ['netProfitYoYMin', 'sc-netProfitYoYMin'], ['debtRatioMax', 'sc-debtRatioMax'], ['marketCapMin', 'sc-marketCapMin']]
+      .forEach(([p, id]) => { const v = $(id).value.trim(); if (v !== '') params[p] = v; });
+
+    const hint = $('screenHint');
+    screenBtn.disabled = true; const old = screenBtn.textContent; screenBtn.textContent = '筛选中…';
+    hint.textContent = '正在调用 OpenD 条件选股…（无条件的全市场扫描较慢，请耐心等待）';
+    const res = await Quotes.screen(params);
+    screenBtn.disabled = false; screenBtn.textContent = old;
+
+    if (!res || !res.ok) { hint.textContent = '筛选失败：' + ((res && res.error) || '确认本机 bridge.py 已启动并连上 OpenD'); return; }
+    const rows = res.rows || [];
+    if (!rows.length) { hint.textContent = '没有符合条件的股票，试着放宽条件。'; return; }
+    if (state.stocks.length && !confirm(`筛选到 ${rows.length} 只，将替换当前列表（${state.stocks.length} 只）？`)) { hint.textContent = '已取消。'; return; }
+    state.stocks = rows.map(screenRowToStock);
+    save(); render();
+    let msg = `已载入 ${rows.length} 只并打分（${res.quarter}）。`;
+    if (res.skippedFields && res.skippedFields.length) msg += ` 本机 futu 不支持字段：${res.skippedFields.join('、')}（已跳过，可 /fields 校准）。`;
+    if (res.note) msg += ' ' + res.note;
+    hint.textContent = msg;
+  };
+
   /* ---------- 数据源状态 ---------- */
   async function checkBridge() {
     const dot = $('bridgeDot'), text = $('bridgeText');
