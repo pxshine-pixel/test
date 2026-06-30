@@ -209,6 +209,13 @@
       { id: uid(), code: '600519', name: '贵州茅台', metrics: { revenueYoY: -1.21, netProfitYoY: -4.53, roe: 36.34, grossMargin: 91.93, netMargin: 47.8, ocfToNp: 95, debtRatio: 18, pe: 16.23, pb: 5.68 }, override: '' },
       { id: uid(), code: '688678', name: '福立旺', metrics: { revenueYoY: 53.46, netProfitYoY: 1.26, roe: 6, grossMargin: 22, netMargin: 3, ocfToNp: 20, debtRatio: 45, pe: 60, pb: 3 }, override: '' },
       { id: uid(), code: '300727', name: '润禾材料', metrics: { revenueYoY: 6.21, netProfitYoY: 24.66, roe: 9, grossMargin: 27.04, netMargin: 8.51, ocfToNp: 45, debtRatio: 40, pe: 30, pb: 2.2 }, override: '' },
+      { id: uid(), code: '688103', name: '国力电子', metrics: { revenueYoY: 66.98, netProfitYoY: 132.95, roe: 6.16, grossMargin: 25.24, netMargin: 5.45, ocfToNp: 180.4, debtRatio: 57.2, pe: 90, pb: 5.8 }, override: '' },
+      { id: uid(), code: '301161', name: '唯万密封', metrics: { revenueYoY: 10.68, netProfitYoY: 38.54, grossMargin: 42.4, netMargin: 12.2, debtRatio: 26.13, pe: 80, pb: 4.5 }, override: '' },
+      { id: uid(), code: '603194', name: '中力股份', metrics: { revenueYoY: 10.7, netProfitYoY: 2.24, roe: 16.80, grossMargin: 29.3, netMargin: 12.0, ocfToNp: 75.8, debtRatio: 37.66, pe: 20.3, pb: 2.9 }, override: '' },
+      { id: uid(), code: '688219', name: '会通股份', metrics: { revenueYoY: 10.03, netProfitYoY: 8.96, roe: 6.90, grossMargin: 13.76, netMargin: 3.54, ocfToNp: 413, debtRatio: 66.67, pe: 30, pb: 2.0 }, override: '' },
+      { id: uid(), code: '300826', name: '测绘股份', metrics: { revenueYoY: 25.57, netProfitYoY: 8.22, roe: 0.81, grossMargin: 32.44, netMargin: 1.46, ocfToNp: 235.46, debtRatio: 43.98, pe: 76.18, pb: 2.7 }, override: '' },
+      { id: uid(), code: '300700', name: '岱勒新材', metrics: { revenueYoY: 25.17, netProfitYoY: 20.88, roe: -22.33, netMargin: -42.9, ocfToNp: -39, debtRatio: 49.23 }, override: '' },
+      { id: uid(), code: '300024', name: '机器人', metrics: { revenueYoY: -0.40, netProfitYoY: -105.43, grossMargin: 13.79, netMargin: -9.65, debtRatio: 61.77, pb: 5.43 }, override: '' },
       { id: uid(), code: '000620', name: '盈新发展', metrics: { revenueYoY: -48.38, netProfitYoY: -682, roe: -5, grossMargin: 6.74, netMargin: -10, ocfToNp: -30, debtRatio: 58.49, pe: -12, pb: 6 }, override: '' },
     ];
     save(); render();
