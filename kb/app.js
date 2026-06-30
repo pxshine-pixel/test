@@ -70,6 +70,30 @@
   }
 
   /* ---------- 右侧报告 ---------- */
+  // 从「基本面打分」工具（同源 localStorage）读取该代码的分数
+  function scoreFor(code) {
+    if (typeof Scorer === 'undefined') return null;
+    let st; try { st = JSON.parse(localStorage.getItem('scorer.state.v1')); } catch (e) { return null; }
+    if (!st || !Array.isArray(st.stocks)) return null;
+    const norm = (c) => String(c == null ? '' : c).toLowerCase().replace(/^(sh|sz|bj|hk)\.?/, '');
+    const hit = st.stocks.find((x) => norm(x.code) === norm(code));
+    if (!hit) return null;
+    const r = Scorer.scoreFundamentals(hit.metrics || {}, st.weights);
+    const ov = hit.override;
+    const final = (ov !== '' && ov != null && Number.isFinite(Number(ov))) ? Number(ov) : r.total;
+    if (final == null) return null;
+    return { total: final, grade: Scorer.gradeOf(final), flags: r.flags || [] };
+  }
+
+  function scoreBadge(code) {
+    const sc = scoreFor(code);
+    if (!sc) return '<a class="score-badge none" href="../scorer/index.html" title="去打分工具录入指标">未评分</a>';
+    const cls = sc.total >= 65 ? 'good' : sc.total >= 50 ? 'mid' : 'weak';
+    const flags = (sc.flags || []).map((f) => `<span class="mini-flag ${f.level}">${esc(f.label)}</span>`).join('');
+    return `<a class="score-badge ${cls}" href="../scorer/index.html" title="点击打开打分工具">
+      <span class="sb-num">${sc.total}</span><span class="sb-grade">${sc.grade}</span>${flags}</a>`;
+  }
+
   function renderReport() {
     const ph = $('placeholder'), body = $('reportBody');
     const s = getSel();
@@ -83,6 +107,7 @@
           <h2>${esc(s.name || '未命名')} <span class="r-code">${esc(s.code)}</span></h2>
           <span class="r-meta">${updated}</span>
         </div>
+        ${scoreBadge(s.code)}
         <div class="r-actions">
           <button class="btn" id="pullBtn">⤓ 拉取指标</button>
           <button class="btn" id="editBtn">${editing ? '✓ 预览' : '✎ 编辑'}</button>

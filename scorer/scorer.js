@@ -122,6 +122,6 @@ function round1(x) { return Math.round(x * 10) / 10; }
 function pct(v) { return has(v) ? `${Number(v)}%` : '—'; }
 function val(v) { return has(v) ? `${Number(v)}` : '—'; }
 
-const API = { scoreFundamentals, redFlags, gradeOf, DEFAULT_WEIGHTS, WEIGHT_PRESETS };
-if (typeof module !== 'undefined' && module.exports) module.exports = API;
-if (typeof window !== 'undefined') window.Scorer = API;
+const SCORER_API = { scoreFundamentals, redFlags, gradeOf, DEFAULT_WEIGHTS, WEIGHT_PRESETS };
+if (typeof module !== 'undefined' && module.exports) module.exports = SCORER_API;
+if (typeof window !== 'undefined') window.Scorer = SCORER_API;
