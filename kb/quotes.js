@@ -8,6 +8,9 @@
     try { return localStorage.getItem('tracker.bridgeBase') || DEFAULT_BASE; }
     catch (e) { return DEFAULT_BASE; }
   }
+  function setBase(url) {
+    try { localStorage.setItem('tracker.bridgeBase', url); } catch (e) { /* ignore */ }
+  }
   async function getJSON(path, timeoutMs) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs || 8000);
@@ -20,5 +23,6 @@
   }
   function health() { return getJSON('/health', 5000); }
   function quote(code) { return getJSON('/quote?code=' + encodeURIComponent(code)); }
-  global.Quotes = { base, health, quote, DEFAULT_BASE };
+  function financials(code) { return getJSON('/financials?code=' + encodeURIComponent(code), 12000); }
+  global.Quotes = { base, setBase, health, quote, financials, DEFAULT_BASE };
 })(window);

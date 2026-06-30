@@ -16,8 +16,25 @@ function filterStocks(stocks, query) {
     String(s.code || '').toLowerCase().includes(q));
 }
 
-/** 用行情快照生成一份基本面报告骨架（Markdown） */
-function metricsTemplate(q) {
+/** 把财务指标数组渲染成 Markdown 表格（近几期：营收/净利及同比/ROE/毛利率） */
+function financialsTable(financials) {
+  const rows = (financials || []).filter((r) => r && r.period).slice(0, 5);
+  if (!rows.length) return '';
+  const yi = (v) => (v == null ? '—' : (Math.abs(v) >= 1e8 ? (v / 1e8).toFixed(2) + ' 亿' : (v / 1e4).toFixed(0) + ' 万'));
+  const pct = (v) => (v == null ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%');
+  const num = (v, s) => (v == null ? '—' : Number(v).toFixed(2) + (s || ''));
+  const lines = [
+    '| 报告期 | 营业收入 | 营收同比 | 归母净利 | 净利同比 | ROE | 毛利率 |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
+  ];
+  rows.forEach((r) => {
+    lines.push(`| ${String(r.period).slice(0, 10)} | ${yi(r.revenue)} | ${pct(r.revenueYoY)} | ${yi(r.netProfit)} | ${pct(r.netProfitYoY)} | ${num(r.roe, '%')} | ${num(r.grossMargin, '%')} |`);
+  });
+  return lines.join('\n');
+}
+
+/** 用行情快照（可选附财务指标）生成一份基本面报告骨架（Markdown） */
+function metricsTemplate(q, financials) {
   q = q || {};
   const row = (k, v, suffix) => `| ${k} | ${v == null || v === '' ? '—' : v}${v == null || v === '' ? '' : (suffix || '')} |`;
   const px = q.price != null && q.price !== '' ? q.price : '—';
@@ -38,9 +55,10 @@ function metricsTemplate(q) {
     row('现价', q.price),
     row('市盈率 PE', q.peTtm != null ? q.peTtm : q.pe),
     row('市净率 PB', q.pb),
+    row('总市值', q.marketCap != null ? yiStr(q.marketCap) : ''),
     row('股息率', q.dividend, '%'),
     '',
-    '（营收 / 利润 / 毛利率 / 负债率 / 速动比率 / 现金流的趋势与结论）',
+    (financialsTable(financials) || '（营收 / 利润 / 毛利率 / 负债率 / 速动比率 / 现金流的趋势与结论）'),
     '',
     '## 三、催化剂 / 多头逻辑',
     '（题材、并购、事件驱动；标的质地、可信度、兑现节点）',
@@ -161,6 +179,16 @@ function escapeHtml(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-const API = { filterStocks, metricsTemplate, renderMarkdown, escapeHtml };
+/** 金额（元）转「X 亿 / X 万」可读字符串 */
+function yiStr(v) {
+  if (v == null || v === '') return '';
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '';
+  if (Math.abs(n) >= 1e8) return (n / 1e8).toFixed(2) + ' 亿';
+  if (Math.abs(n) >= 1e4) return (n / 1e4).toFixed(0) + ' 万';
+  return String(n);
+}
+
+const API = { filterStocks, metricsTemplate, financialsTable, renderMarkdown, escapeHtml, yiStr };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 if (typeof window !== 'undefined') window.KB = API;

@@ -117,15 +117,20 @@
   async function pull(s) {
     const btn = $('pullBtn');
     btn.disabled = true; btn.textContent = '拉取中…';
-    const r = await Quotes.quote(s.code);
+    // 行情与财报并行拉取（财报接口可能不可用，失败不阻断）
+    const [r, f] = await Promise.all([
+      Quotes.quote(s.code),
+      Quotes.financials ? Quotes.financials(s.code).catch(() => ({ ok: false })) : Promise.resolve({ ok: false }),
+    ]);
     btn.disabled = false; btn.textContent = '⤓ 拉取指标';
     if (!r.ok || !r.quotes || !r.quotes.length) {
-      alert('拉取失败：' + (r.error || '无数据') + '\n确认 OpenD 已登录、bridge.py 运行中。');
+      alert('拉取失败：' + (r.error || '无数据') + '\n确认数据源可用（本机 bridge.py 或已配置的云端 Worker）。');
       return;
     }
     const q = r.quotes[0];
     if (q.name && !s.name) s.name = q.name;
-    const tpl = KB.metricsTemplate(q);
+    const fin = f && f.ok ? f.financials : null;
+    const tpl = KB.metricsTemplate(q, fin);
     // 已有报告则把指标表插到开头，否则用整个骨架
     if (s.report && s.report.trim()) {
       if (!confirm('已有报告。用最新指标生成新骨架会覆盖当前内容，确定？')) return;
@@ -188,7 +193,14 @@
     };
     reader.readAsText(f); e.target.value = '';
   };
-  $('bridgeStatus').onclick = checkBridge;
+  $('bridgeStatus').onclick = (e) => {
+    if (e.shiftKey || e.altKey) {
+      const cur = Quotes.base();
+      const val = prompt('数据源地址（本机 bridge.py 或云端 Worker，如 https://stock-data-api.xxx.workers.dev）：', cur);
+      if (val) { Quotes.setBase(val.trim()); }
+    }
+    checkBridge();
+  };
 
   function renderAll() { renderList(); renderReport(); }
 

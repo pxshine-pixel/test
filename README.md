@@ -24,10 +24,20 @@
 ├── tracker/            # 个股长期跟踪系统（含 bridge.py OpenD 桥接服务）
 ├── analysis/           # 技术分析（形态/密集区/买卖信号，复用 bridge.py）
 ├── fundamentals/       # 基本面汇总排序（导入 /score 结果排序）
-└── kb/                 # 基本面知识库（左股票/右报告，复用 bridge.py）
+├── kb/                 # 基本面知识库（左股票/右报告）
+└── data-worker/        # 免费行情/财报数据 Worker（Cloudflare 云端数据源，可选）
 ```
 
 每个工具目录内都有独立的 README 说明其功能与用法。
+
+## 数据源：本机 OpenD 或云端 Worker
+
+需要实时行情 / K 线 / 财报的工具（跟踪、技术分析、知识库）有两种数据源，二选一：
+
+- **本机 `tracker/bridge.py`**：连富途 OpenD，数据质量高；仅本机可用。
+- **云端 `data-worker/`**：部署一个 Cloudflare Worker 代理东方财富免费接口，**公网站点随时随地可用、无需本机**，并新增 `/financials` 财报接口。详见 [`data-worker/README.md`](data-worker/README.md)。
+
+两者返回格式兼容，在工具页顶栏配置数据源地址即可切换。免费接口数据仅供参考。
 
 ## 测试
 

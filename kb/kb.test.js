@@ -30,6 +30,30 @@ test('报告模板含名称、代码与指标', () => {
   has(md, '框架收口');
 });
 
+test('财务表：渲染近几期营收/净利/同比/ROE/毛利率', () => {
+  const md = KB.financialsTable([
+    { period: '2025-09-30', revenue: 1169000000, revenueYoY: -48.38, netProfit: -486000000, netProfitYoY: -682, roe: -5.2, grossMargin: 6.74 },
+    { period: '2024-12-31', revenue: 2300000000, revenueYoY: 3.1, netProfit: 50000000, netProfitYoY: 12, roe: 4.1, grossMargin: 23.46 },
+  ]);
+  has(md, '报告期');
+  has(md, '11.69 亿');     // 营收亿元换算
+  has(md, '-48.38%');      // 同比带符号
+  has(md, '6.74%');        // 毛利率
+});
+
+test('财务表：空数组返回空串', () => {
+  assert.strictEqual(KB.financialsTable([]), '');
+  assert.strictEqual(KB.financialsTable(null), '');
+});
+
+test('metricsTemplate 可嵌入财务表', () => {
+  const md = KB.metricsTemplate({ name: 'A', code: '600519' }, [
+    { period: '2025-09-30', revenue: 1169000000, revenueYoY: -48.38, netProfit: -486000000, netProfitYoY: -682, roe: -5.2, grossMargin: 6.74 },
+  ]);
+  has(md, '报告期');
+  has(md, '11.69 亿');
+});
+
 test('Markdown：标题', () => {
   has(KB.renderMarkdown('# 标题一'), '<h1>标题一</h1>');
   has(KB.renderMarkdown('### 小标题'), '<h3>小标题</h3>');
