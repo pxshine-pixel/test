@@ -1,11 +1,7 @@
-# Cloudflare Pages 响应头配置
-# 静态资源长缓存
-/*.css
-  Cache-Control: public, max-age=86400
-/*.js
-  Cache-Control: public, max-age=86400
-
-# 基础安全头（不含 CSP，避免误伤）
+# Cloudflare 响应头配置
+# 站点为零构建、频繁更新，统一用 no-cache（仍会缓存但每次向服务器校验，
+# 内容变了立即生效，未变则返回 304），避免旧版 JS/HTML 被长期缓存。
 /*
+  Cache-Control: no-cache
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
