@@ -29,7 +29,7 @@
     const del = new Set(deleted.map(String));
     (window.KB_REPORTS || []).forEach((b) => {
       if (!codes.has(String(b.code)) && !del.has(String(b.code))) {
-        out.push({ id: b.id || ('kb-' + b.code), code: b.code, name: b.name || '', report: b.report || '', updated: b.updated || '', bundled: true });
+        out.push({ id: b.id || ('kb-' + b.code), code: b.code, name: b.name || '', report: b.report || '', updated: b.updated || '', metrics: b.metrics || null, bundled: true });
       }
     });
     return out;
@@ -90,16 +90,25 @@
   // 从「基本面打分」工具（同源 localStorage）读取该代码的分数
   function scoreFor(code) {
     if (typeof Scorer === 'undefined') return null;
-    let st; try { st = JSON.parse(localStorage.getItem('scorer.state.v1')); } catch (e) { return null; }
-    if (!st || !Array.isArray(st.stocks)) return null;
     const norm = (c) => String(c == null ? '' : c).toLowerCase().replace(/^(sh|sz|bj|hk)\.?/, '');
-    const hit = st.stocks.find((x) => norm(x.code) === norm(code));
-    if (!hit) return null;
-    const r = Scorer.scoreFundamentals(hit.metrics || {}, st.weights);
-    const ov = hit.override;
-    const final = (ov !== '' && ov != null && Number.isFinite(Number(ov))) ? Number(ov) : r.total;
-    if (final == null) return null;
-    return { total: final, grade: Scorer.gradeOf(final), flags: r.flags || [] };
+    // 1) 打分工具里的用户数据优先（含自定义权重与手动覆盖）
+    let st; try { st = JSON.parse(localStorage.getItem('scorer.state.v1')); } catch (e) { st = null; }
+    if (st && Array.isArray(st.stocks)) {
+      const hit = st.stocks.find((x) => norm(x.code) === norm(code));
+      if (hit) {
+        const r = Scorer.scoreFundamentals(hit.metrics || {}, st.weights);
+        const ov = hit.override;
+        const final = (ov !== '' && ov != null && Number.isFinite(Number(ov))) ? Number(ov) : r.total;
+        if (final != null) return { total: final, grade: Scorer.gradeOf(final), flags: r.flags || [] };
+      }
+    }
+    // 2) 退回报告内置 metrics（默认权重）——让分数随报告自动显示，无需先去打分工具
+    const s = stocks.find((x) => norm(x.code) === norm(code));
+    if (s && s.metrics) {
+      const r = Scorer.scoreFundamentals(s.metrics);
+      if (r.total != null) return { total: r.total, grade: Scorer.gradeOf(r.total), flags: r.flags || [] };
+    }
+    return null;
   }
 
   function scoreBadge(code) {

@@ -10,6 +10,7 @@ window.KB_REPORTS = [
     code: '688678',
     name: '福立旺',
     updated: '2026-06-30 11:36',
+    metrics: {"revenueYoY":53.46,"netProfitYoY":1.26,"roe":6,"grossMargin":22,"netMargin":3,"ocfToNp":20,"debtRatio":45,"pe":60,"pb":3},
     report: `# 福立旺 688678
 
 > **一句话定性**：正常经营的**成长制造股**，3C 精密金属零部件放量驱动营收高增（+53%），但表观利润几乎走平——增长的"含金量"待验证。归为「成长验证中」，是基本面标的而非题材标的，核心看盈利能力能否随规模修复。
@@ -61,6 +62,7 @@ window.KB_REPORTS = [
     code: '300727',
     name: '润禾材料',
     updated: '2026-06-30 11:36',
+    metrics: {"revenueYoY":6.21,"netProfitYoY":24.66,"roe":9,"grossMargin":27.04,"netMargin":8.51,"ocfToNp":45,"debtRatio":40,"pe":30,"pb":2.2},
     report: `# 润禾材料 300727
 
 > **一句话定性**：有机硅深加工**盈利改善型**标的。2025 利润增速（+24.7%）显著快于营收（+6.2%）、毛利率大幅改善（+7.8pct），盈利能力修复明显；但增速被指低于预期、经营现金流转弱。是基本面标的，核心看现金流质量与硅价周期。
@@ -114,6 +116,7 @@ window.KB_REPORTS = [
     code: '000620',
     name: '盈新发展',
     updated: '2026-06-30 11:36',
+    metrics: {"revenueYoY":-48.38,"netProfitYoY":-682,"roe":-5,"grossMargin":6.74,"netMargin":-10,"ocfToNp":-30,"debtRatio":58.49,"pe":-12,"pb":6},
     report: `# 盈新发展 000620
 
 > **一句话定性**：困境反转 + 半导体题材的**事件驱动型博弈标的**，不是基本面投资标的。基本面是受损的，股价目前主要由**长兴半导体收购题材**驱动，而非由基本面支撑。
@@ -170,6 +173,7 @@ window.KB_REPORTS = [
     code: '688103',
     name: '国力电子',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":66.98,"netProfitYoY":132.95,"roe":6.16,"grossMargin":25.24,"netMargin":5.45,"ocfToNp":180.4,"debtRatio":57.2,"pe":90,"pb":5.8},
     report: `# 国力电子 688103
 
 > **一句话定性**：偏成长型基本面标的 + **半导体国产替代/新能源**题材。2025 业绩拐点（营收 +67%、净利翻倍），但低毛利、低 ROE、高估值、高杠杆并存——强度**中**。
@@ -215,6 +219,7 @@ window.KB_REPORTS = [
     code: '300024',
     name: '机器人',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":-0.4,"netProfitYoY":-105.43,"grossMargin":13.79,"netMargin":-9.65,"debtRatio":61.77,"pb":5.43},
     report: `# 机器人 300024
 
 > **一句话定性**：**题材/事件驱动型标的（弱基本面）**。主业连续亏损、ROE 为负、毛利率下行，估值由人形机器人主题与"机器人"正股身份支撑。基本面强度**弱**。
@@ -261,6 +266,7 @@ window.KB_REPORTS = [
     code: '301161',
     name: '唯万密封',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":10.68,"netProfitYoY":38.54,"grossMargin":42.4,"netMargin":12.2,"debtRatio":26.13,"pe":80,"pb":4.5},
     report: `# 唯万密封 301161
 
 > **一句话定性**：题材/事件驱动为主（半导体 + 机器人密封，偏强）；基本面健康但中等（双位增长、高毛利、低负债），**估值已显著领先基本面**。
@@ -306,6 +312,7 @@ window.KB_REPORTS = [
     code: '300826',
     name: '测绘股份',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":25.57,"netProfitYoY":8.22,"roe":0.81,"grossMargin":32.44,"netMargin":1.46,"ocfToNp":235.46,"debtRatio":43.98,"pe":76.18,"pb":2.7},
     report: `# 测绘股份 300826
 
 > **一句话定性**：偏**题材/事件驱动**（地理信息、低空经济），基本面**偏弱**——营收虽增但盈利质量低、ROE 极低、估值高且依赖非经常性损益与减值扰动。
@@ -352,6 +359,7 @@ window.KB_REPORTS = [
     code: '688219',
     name: '会通股份',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":10.03,"netProfitYoY":8.96,"roe":6.9,"grossMargin":13.76,"netMargin":3.54,"ocfToNp":413,"debtRatio":66.67,"pe":30,"pb":2},
     report: `# 会通股份 688219
 
 > **一句话定性**：偏"**基本面 + 题材**双驱"。基本面是低增速、薄利、高杠杆的传统改性塑料制造（中偏弱）；股价弹性更多来自**机器人材料/锂电隔膜**题材。整体**中**。
@@ -400,6 +408,7 @@ window.KB_REPORTS = [
     code: '300700',
     name: '岱勒新材',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":25.17,"netProfitYoY":20.88,"roe":-22.33,"netMargin":-42.9,"ocfToNp":-39,"debtRatio":49.23},
     report: `# 岱勒新材 300700
 
 > **一句话定性**：偏**题材/事件驱动**，基本面**弱**——连续亏损、现金流与毛利恶化，不构成基本面标的；由"果链/消费电子转型 + 光伏反内卷复苏 + 减值出清"困境反转预期驱动。
@@ -446,6 +455,7 @@ window.KB_REPORTS = [
     code: '603194',
     name: '中力股份',
     updated: '2026-06-30 13:38',
+    metrics: {"revenueYoY":10.7,"netProfitYoY":2.24,"roe":16.8,"grossMargin":29.3,"netMargin":12,"ocfToNp":75.8,"debtRatio":37.66,"pe":20.3,"pb":2.9},
     report: `# 中力股份 603194
 
 > **一句话定性**：偏**基本面标的**（真实业绩、龙头、海外成长清晰），中等偏强——业务扎实但净利增速放缓、估值不算便宜。强度**中**。
