@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基本面知识库</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>📚 基本面知识库</h1>
+      <div class="bridge-status" id="bridgeStatus" title="点击重新检测">
+        <span class="dot" id="bridgeDot"></span><span id="bridgeText">—</span>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- 左侧：股票列表 -->
+      <aside class="sidebar">
+        <div class="add-row">
+          <input id="newCode" placeholder="代码 如 600519" />
+          <input id="newName" placeholder="名称（可选，自动取）" />
+          <button id="addBtn" class="btn primary">＋</button>
+        </div>
+        <input id="search" class="search" placeholder="搜索名称 / 代码…" />
+        <ul class="stock-list" id="stockList"></ul>
+        <div class="side-actions">
+          <button id="exportBtn" class="link">导出</button>
+          <button id="importBtn" class="link">导入</button>
+          <input type="file" id="importFile" accept="application/json" hidden />
+        </div>
+      </aside>
+
+      <!-- 右侧：基本面报告 -->
+      <section class="report" id="report">
+        <div class="placeholder" id="placeholder">
+          <p>👈 左侧添加 / 选择一只股票，右侧查看与编辑基本面分析报告</p>
+          <p class="hint">报告用 Markdown 编写。可粘贴 /score 的分析；点「拉取指标」可从本机 OpenD
+            自动填入名称与 PE/PB/股息等关键指标。</p>
+        </div>
+        <div id="reportBody" hidden></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="kb.js"></script>
+  <script src="quotes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
